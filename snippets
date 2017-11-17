@@ -1,0 +1,24 @@
+```
+set -x sbd (kubectl get po -l 'app=strategy,tenant=bad-decision' -o json | jq '.items[].metadata.name' | tr -d '"')
+kubectl exec -it $sbd /bin/bash
+```
+
+```
+pid=$(docker inspect -f '{{.Status.Pid }}' $cname)
+mkdir -p /var/run/netns
+ln -sf /proc/$pid/ns/net /var/run/netns/boop
+ip netns boop exec iptables -L -v -t nat
+```
+
+```
+set fs key.pem cert-chain.pem root-cert.pem
+for f in $fs; kubectl exec -c istio-proxy $sbd /bin/cat -- /etc/certs/$f >$f; end
+kubectl delete -f /home/ben/src/work/grcl/istio-workshop/istio-0.2.12/install/kubernetes/istio-initializer.yaml 
+kubectl apply -f /home/ben/src/work/grcl/istio-workshop/istio-0.2.12/install/kubernetes/istio-initializer.yaml 
+kubectl run --image centos:7 toolbox /bin/bash -- -c 'sleep 84600'
+set tb (kubectl get po -o json | jq '.items[] | select(.spec.containers[].name == "toolbox") | .metadata.name' | tr -d '"')
+for f in $fs; kubectl cp $f $tb:$f; end
+openssl verify -CAfile root-cert.pem -show_chain cert-chain.pem
+openssl x509 -in cert-chain.pem -text | less
+
+```

@@ -1,0 +1,28 @@
+apiVersion: "config.istio.io/v1alpha2"
+kind: denier
+metadata:
+  name: denyxtenant
+  namespace: istio-system
+spec:
+  status:
+    code: 7
+    message: Not allowed
+---
+apiVersion: "config.istio.io/v1alpha2"
+kind: checknothing
+metadata:
+  name: denyxtenant
+  namespace: istio-system
+spec:
+---
+apiVersion: "config.istio.io/v1alpha2"
+kind: rule
+metadata:
+  name: denyxtenant
+  namespace: istio-system
+spec:
+  match: destination.labels["app"] == "strategy" && source.serviceAccount != destination.serviceAccount && source.serviceAccount != "default"
+  actions:
+    - handler: denyxtenant.denier.istio-system
+      instances:
+        - denyxtenant.checknothing.istio-system

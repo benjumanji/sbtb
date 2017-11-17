@@ -1,0 +1,126 @@
+#
+# Exchange
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: exchange
+  labels:
+    app: exchange
+spec:
+  ports:
+    - port: 8000
+      name: http
+  selector:
+    app: exchange
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: exchange
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: exchange
+    spec:
+      containers:
+        - name: exchange
+          image: artfuldodge/exchange:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+#
+# BADDECISION
+#
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tenant-bad-decision
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strategy-bd
+  labels:
+    app: strategy
+    tenant: bad-decision
+spec:
+  ports:
+    - port: 8000
+      name: http
+  selector:
+    app: strategy
+    tenant: bad-decision
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: strategy-bd
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: strategy
+        tenant: bad-decision
+    spec:
+      serviceAccountName: tenant-bad-decision
+      containers:
+        - name: strategy
+          image: artfuldodge/strategy:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: TENANT
+              value: BADDECISION
+---
+#
+# SECONDDATE
+#
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tenant-second-date
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strategy-sd
+  labels:
+    app: strategy
+    tenant: second-date
+spec:
+  ports:
+    - port: 8000
+      name: http
+  selector:
+    app: strategy
+    tenant: second-date
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: strategy-sd
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: strategy
+        tenant: second-date
+    spec:
+      serviceAccountName: tenant-second-date
+      containers:
+        - name: strategy
+          image: artfuldodge/strategy:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: TENANT
+              value: SECONDDATE
+---
